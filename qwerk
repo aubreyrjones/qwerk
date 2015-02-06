@@ -2,6 +2,7 @@
 import Requirements
 import argparse
 import pprint
+import os.path
 
 args_parser = argparse.ArgumentParser(description = "Manage requirements, generates documents.")
 args_parser.add_argument('req_files', nargs="*", type=str, help="Test file")
@@ -12,7 +13,10 @@ args = args_parser.parse_args()
 req_dir = {}
 roots = []
 for f in args.req_files:
-    roots.append(Requirements.parse_recursive(f, req_dir))
+    if os.path.isdir(f):
+        Requirements.parse_directory(f, req_dir)
+    else:
+        roots.append(Requirements.parse_recursive(f, req_dir))
 
 if args.dependencies:
     with open("deps.dot", 'w') as dep_file:
