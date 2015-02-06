@@ -1,26 +1,26 @@
 #!/usr/bin/env python
-import Requirements
+import requirement
 import argparse
 import pprint
 import os.path
 
 args_parser = argparse.ArgumentParser(description = "Manage requirements, generates documents.")
-args_parser.add_argument('req_files', nargs="*", type=str, help="Test file")
+args_parser.add_argument('req_dir', type=str, help="The root directory for requirements. All requirements should be in subdirectories of this directory.")
 args_parser.add_argument('-d', '--dependencies', action='store_const', const=True, default=False, help="Produce the dependency.dot graph file.")
+args_parser.add_argument('-g', '--dump', action='store_const', const=True, default=False, help="Print a bunch of diagnostics and project state.")
 
 args = args_parser.parse_args()
 
-state = Requirements.ReqState({}, [])
+state = requirement.ProjectState()
 
-for f in args.req_files:
-    if os.path.isdir(f):
-        Requirements.parse_directory(f, state)
-    else:
-        Requirements.parse_recursive(f, state)
+state.load_all_from_root(args.req_dir)
+
+if args.dump:
+    state.dump_reqs()
 
 if args.dependencies:
     with open("deps.dot", 'w') as dep_file:
-        outlines = Requirements.dotify(state)
+        outlines = state.dotify_project()
         dep_file.write("\n".join(outlines))
     pass
     
