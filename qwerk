@@ -1,26 +1,59 @@
 #!/usr/bin/env python
+import yaml
 import requirement
+import document
 import argparse
 import pprint
 import os.path
 
-args_parser = argparse.ArgumentParser(description = "Manage requirements, generates documents.")
-args_parser.add_argument('req_dir', type=str, help="The root directory for requirements. All requirements should be in subdirectories of this directory.")
-args_parser.add_argument('-d', '--dependencies', action='store_const', const=True, default=False, help="Produce the dependency.dot graph file.")
-args_parser.add_argument('-g', '--dump', action='store_const', const=True, default=False, help="Print a bunch of diagnostics and project state.")
+def find_qwerkfile(curdir):
+    if not curdir:
+        return (None, None)
+    qfilename = os.path.join(curdir, "Qwerkfile")
+    if os.path.exists(qfilename):
+        return (curdir, qfilename)
+    else:
+        return find_qwerkfile(os.path.split(curdir)[0])
 
+args_parser = argparse.ArgumentParser(description = "Manage requirements, generates documents.")
+args_parser.add_argument('-d', '--dependencies', action='store_const', const=True, default=False, help="Produce the dependency dot graph file.")
+args_parser.add_argument('-o', '--document', action='store_const', const=True, default=False, help="Produce the requirements markdown document.")
+args_parser.add_argument('-g', '--dump', action='store_const', const=True, default=False, help="Print a bunch of diagnostics and project state.")
 args = args_parser.parse_args()
 
-state = requirement.ProjectState()
 
-state.load_all_from_root(args.req_dir)
+qwerkfile = find_qwerkfile(os.path.abspath("."))
+
+pprint.pprint(qwerkfile)
+
+if not qwerkfile[1]:
+    print "Cannot find Qwerkfile in any parent directory."
+    exit()
+
+qwerk_yml = None
+with open(qwerkfile[1], 'r') as qf:
+    qwerk_yml = yaml.load(qf.read())
+
+reqs_root = os.path.join(qwerkfile[0], qwerk_yml['req_dir'])
+out_root = os.path.join(qwerkfile[0], qwerk_yml['output_dir'])
+
+state = requirement.ProjectState(qwerk_yml['project_name'])
+
+state.load_all_from_root(reqs_root)
 
 if args.dump:
     state.dump_reqs()
 
 if args.dependencies:
-    with open("deps.dot", 'w') as dep_file:
+    dep_file = os.path.join(out_root, "{0}_Requirements_Dependency.dot".format(qwerk_yml['project_name']))
+    with open(dep_file, 'w') as dep_file:
         outlines = state.dotify_project()
         dep_file.write("\n".join(outlines))
     pass
-    
+
+if args.document:
+    doc_file = os.path.join(out_root, "{0}_Requirements.md".format(qwerk_yml['project_name']))
+    with open(doc_file, 'w') as doc_file:
+        outlines = document.format_project(state)
+        doc_file.write("\n".join(outlines))
+

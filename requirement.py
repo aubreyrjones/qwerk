@@ -32,7 +32,8 @@ class ProjectState(object):
     Represents the state of a project, including all discovered requirements
     and the search path for finding undiscovered requirements.
     '''
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.requirements = {}
         self.categories = {}
         self.path = []
@@ -67,9 +68,9 @@ class ProjectState(object):
         req = Requirement(name, text, category, deps)
         self.requirements[name] = req
         if category in self.categories:
-            self.categories[category].append(req)
+            self.categories[category].append(req.name)
         else:
-            self.categories[category] = [req]
+            self.categories[category] = [req.name]
         
     def load_directory(self, dirname):
         '''
@@ -83,8 +84,9 @@ class ProjectState(object):
         Load all of the subdirectories under the given directory.
         '''
         for entry in os.listdir(root_dirname):
-            if os.path.isdir(entry):
-                self.load_directory(entry)
+            f = os.path.join(root_dirname, entry)
+            if os.path.isdir(f):
+                self.load_directory(f)
         self.graphify()
 
     def graph_out_req(self, key):
@@ -128,13 +130,31 @@ class ProjectState(object):
         '''
         return self.requirements[req_key].number_of_incoming()
     
+    def dotify_category(self, category, outlines):
+        outlines.append("subgraph cluster_{0} {{".format(category))
+        outlines.append("label = \"{0}\";".format(category))
+        outlines.append("color=blue;")
+        #outlines.append("node [style=filled];")
+    
+        quoted = map(lambda x: '"{0}"'.format(x), self.categories[category])
+        
+        outlines.append(" ".join(quoted) + ";")    
+        
+        outlines.append("}\n\n")
+        
+    
     def dotify_project(self):
         '''
         Produce a dot file for the dependency graph of the project.
         '''
         outlines = []
-        outlines.append("digraph Dependency {")
+        outlines.append("digraph \"{0} Requirements Dependency\" {{".format(self.name))
+        #outlines.append("graph [compound=true];")
+        outlines.append("node [shape=record];\n\n")
         
+        for cat in self.categories.keys():
+            self.dotify_category(cat, outlines)
+    
         remaining_keys = sorted(self.requirements.keys(), key=lambda k: self.req_sort_key(k), reverse=True)
         
         while remaining_keys:
