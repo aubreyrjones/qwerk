@@ -37,7 +37,7 @@ def recursive_load(req, state):
     Load the dependencies listed in the given requirement.
     '''
     for d in req.deps:
-        if d in req_dir:
+        if d in state.req_dir:
             req.parsed_deps.append(state.req_dir[d])
         else:
             req.parsed_deps.append(parse_recursive(d + ".y", state))
@@ -63,9 +63,9 @@ def dotify_recursive(root, state, outlines):
     '''
     for d in root.parsed_deps:
         outlines.append("{0} -> {1};".format(d.name, root.name))
-        if d.name in req_dir:
+        if d.name in state.req_dir:
             dotify_recursive(d, state, outlines)
-    if root.name in req_dir:
+    if root.name in state.req_dir:
         del state.req_dir[root.name]
 
 def dotify(state):

@@ -10,17 +10,17 @@ args_parser.add_argument('-d', '--dependencies', action='store_const', const=Tru
 
 args = args_parser.parse_args()
 
-req_dir = {}
-roots = []
+state = Requirements.ReqState({}, [])
+
 for f in args.req_files:
     if os.path.isdir(f):
-        Requirements.parse_directory(f, req_dir)
+        Requirements.parse_directory(f, state)
     else:
-        roots.append(Requirements.parse_recursive(f, req_dir))
+        Requirements.parse_recursive(f, state)
 
 if args.dependencies:
     with open("deps.dot", 'w') as dep_file:
-        outlines = Requirements.dotify(req_dir)
+        outlines = Requirements.dotify(state)
         dep_file.write("\n".join(outlines))
     pass
     
