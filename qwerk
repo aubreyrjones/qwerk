@@ -13,6 +13,9 @@ def find_qwerkfile(curdir):
     if os.path.exists(qfilename):
         return (curdir, qfilename)
     else:
+        splitpath = os.path.split(curdir)
+        if not splitpath[1]:
+            return (None, None)
         return find_qwerkfile(os.path.split(curdir)[0])
 
 args_parser = argparse.ArgumentParser(description = "Manage requirements, generates documents.")
@@ -24,10 +27,8 @@ args = args_parser.parse_args()
 
 qwerkfile = find_qwerkfile(os.path.abspath("."))
 
-pprint.pprint(qwerkfile)
-
 if not qwerkfile[1]:
-    print "Cannot find Qwerkfile in any parent directory."
+    print "Cannot find Qwerkfile in any parent directory. Is this a qwerk project?"
     exit()
 
 qwerk_yml = None
