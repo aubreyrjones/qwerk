@@ -56,6 +56,8 @@ Qwerkfile
 
 At the root of your project, you should create (and check in) a file called `Qwerkfile`. This is a YAML file defining project-level information. When invoked, qwerk recursively searches parent directories looking for a Qwerkfile. If it finds one, its contents are used to find the project requirements information. An error is printed and qwerk exits if there is no Qwerkfile found in any parent directory during operations that require a project.
 
+The easiest way to make a Qwerkfile is with the `qwerk init` command.
+
 The Qwerkfile must define the following keys:
 
 * project_name - a short name for the project; must be valid in a filename.
@@ -69,6 +71,8 @@ Commands
 Additional help can be gotten with the `--help` argument to qwerk, as well as `qwerk $command --help` for help on specific commands (note that the command is the word directly after `qwerk`).
 
 * `qwerk id new` - create a new QwerkID file in your home directory. This file will identify you and permit you to sign requirements. Do *not* share this file, but do copy it between different work machines you use. Do *not* forget your password! It may be best to make it long (like a sentence), and write it down somewhere safe.
+
+* `qwerk init $project_name $requirements_directory $output_directory` - creates a new Qwerkfile and basic requirements directory structure based on the arguments given on the commandline.
 
 * `qwerk id join` - when run from within a qwerk project directory, adds your name and public key to the project as a signer.
 
