@@ -5,7 +5,7 @@ qwerk is a tool for organizing, documenting, and tracking accountability for sof
 
 qwerk works together with version control software to track software requirements from submission through implementation and verification. It is not a task-tracking tool or really a project planning tool, although it does produce requirements dependency diagrams. Instead, it is designed to reduce the administrative burden of managing requirements in regulated fields.
 
-qwerk does this by allowing programmers to document and manage requirements using programmer-friendly tools, directly within the project hierarchy. Project contributors and leads can easily sign off on implementation and review of individual requirements, with an audit trail provided by cryptographic hashes and your existing version control. qwerk is designed to have minimal features, minimal configuration, and minimal impact on existing good practices workflows.
+qwerk does this by allowing programmers to document and manage requirements using programmer-friendly tools, directly within the project hierarchy. Project contributors and leads can easily sign off on implementation and review of individual requirements, with an audit trail provided by cryptographic signatures and your existing version control. qwerk is designed to have minimal features, minimal configuration, and minimal impact on existing good practices workflows.
 
 Features
 --------
