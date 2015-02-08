@@ -27,6 +27,20 @@ class Requirement(object):
         
     def __repr__(self):
         return self.__str__()
+        
+    def is_backlog(self):
+        '''
+        Is this a backlog requirement?
+        '''
+        return self.category.endswith("_backlog")
+    
+    def base_category(self):
+        '''
+        Get base category without _backlog suffix.
+        '''
+        if self.is_backlog():
+            return self.category[:self.category.find("_backlog")]
+        return self.category
 
 class ProjectState(object):
     '''

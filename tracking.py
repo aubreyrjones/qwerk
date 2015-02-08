@@ -147,7 +147,8 @@ def sig_file_name(reqdir, req_name, sig_type):
     Also creates the necessary .sig directory in the reqdir.
     '''
     d = os.path.join(reqdir, ".sig")
-    os.makedirs(d)
+    if not os.path.exists(d):
+        os.makedirs(d)
     return os.path.join(d, "{0}_{1}".format(req_name, sig_type))
 
 def check_sig(reqdir, sigfile, reqfile):
@@ -173,7 +174,22 @@ def check_sigs(state, req_name):
             allPassed = False
     
     return allPassed
-    
+
+def move_req_from_backlog(state, req_name):
+    '''
+    Move the requirement from the backlog into the appropriate
+    category directory.
+    '''
+    req = state.requirements[req_name]
+    if not req.is_backlog():
+        print("Requirement {0} is not in backlog!".format(req_name))
+        return
+    base_cat = req.base_category()
+    if base_cat not in state.path.keys():
+        state.path[base_cat] = os.path.join(state.root, base_cat)
+    cat_dir = state.path[base_cat]
+    destination = os.path.join(cat_dir, "{0}.y".format(req_name))
+    os.renames(req.file, destination)
     
 class Authority(object):
     def __init__(self):
@@ -208,4 +224,5 @@ class Authority(object):
         sig['user'] = "{0}_{1}".format(self.first_name, self.last_name)
         with open(sigfile, 'w') as f:
             yaml.dump(sig, f)
-        
+        if sign_type == 'reviewed':
+            move_req_from_backlog(state, req_name)
