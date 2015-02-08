@@ -98,7 +98,7 @@ def do_checksig(args):
     '''
     Check signatures on requirements.
     '''
-    state = load_project()
+    state, qf = load_project()
     if not args.requirements:
         args.requirements = state.requirements.keys()
     for r in args.requirements:
