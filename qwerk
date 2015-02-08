@@ -47,14 +47,19 @@ def parse_project(qf_yml):
     return state
 
 def load_project():
-    qf = load_qwerkfile()
+    '''
+    Load the project referred to by the current Qwerkfile.
+    '''
     qf = load_qwerkfile()
     if not qf:
         print("Error: no Qwerkfile found. Not a qwerk project.")
         exit()
-    return parse_project(qf)
+    return (parse_project(qf), qf)
     
 def do_identity(args):
+    '''
+    Run identity commands.
+    '''
     if args.command == 'new':
         tracking.new_identity()
     if args.command == 'join':
@@ -65,7 +70,10 @@ def do_identity(args):
         tracking.join_project(qf['req_dir'])
 
 def do_gen(args):
-    state = load_project()
+    '''
+    Run document generation commands.
+    '''
+    state, qf = load_project()
     if args.type in ['all', 'dot']:
         dep_file = os.path.join(qf['output_dir'], "{0}_Requirements_Dependency.dot".format(qf['project_name']))
         with open(dep_file, 'w') as dep_file:
@@ -76,15 +84,20 @@ def do_gen(args):
         with open(doc_file, 'w') as doc_file:
             outlines = document.format_project(state)
             doc_file.write("\n".join(outlines))
-
     
 def do_sign(args):
-    state = load_project()
+    '''
+    Sign requirements.
+    '''
+    state, qf = load_project()
     a = tracking.Authority()
     a.sign_requirement(state, args.requirement, args.type)
     pass
 
 def do_checksig(args):
+    '''
+    Check signatures on requirements.
+    '''
     state = load_project()
     if not args.requirements:
         args.requirements = state.requirements.keys()

@@ -8,13 +8,15 @@ import yaml
 import os.path
 import glob
 
+_qwerkid_file = os.path.expanduser("~/QwerkID")
+
 def read_qwerkid():
     '''
     Read the user's qwerkid.
     '''
-    qwerkid = os.path.expanduser("~/.qwerk.user")
+    qwerkid = _qwerkid_file
     if not os.path.exists(qwerkid):
-        print("No .qwerk.user file exists. Please create one with `qwerk id new` before continuing with these operations.")
+        print("No QwerkID file exists. Please create one with `qwerk id new` before continuing with these operations.")
         exit()
     with open(qwerkid, 'r') as qi:
         return yaml.load(qi)
@@ -35,10 +37,16 @@ def aes_key(password):
     return PBKDF2(password, "salty").read(32)
 
 def encode_privkey(privkey, password):
+    '''
+    Encode a private key to text.
+    '''
     keystring = "CHECK:{0}:{1}:{2}:{3}:{4}".format(privkey.n, privkey.e, privkey.d, privkey.p, privkey.q)
     return b64encode(aes.encryptData(aes_key(password), keystring))
 
 def decode_privkey(text, password):
+    '''
+    Decode private key from text.
+    '''
     keystring = aes.decryptData(aes_key(password), b64decode(text))
     k = keystring.split(":")
     if not k.pop(0) == "CHECK":
@@ -48,9 +56,15 @@ def decode_privkey(text, password):
     return rsa.PrivateKey(ks[0], ks[1], ks[2], ks[3], ks[4])
     
 def encode_pubkey(pubkey):
+    '''
+    Encode a public key to text.
+    '''
     return b64encode("{0}:{1}".format(pubkey.n, pubkey.e))
 
 def decode_pubkey(text):
+    '''
+    Decode a public key from text.
+    '''
     k = b64decode(text).split(":")
     ks = map(long, k)
     return rsa.PublicKey(ks[0], ks[1])
@@ -75,8 +89,7 @@ def write_identity(privkey, pubkey, first, last, password):
     
 def new_identity():
     '''
-    Create a new .qwerk.user file, and store
-    the public key in the req_dir.
+    Create a new .qwerk.user file.
     '''
     first = raw_input("Enter first name: ")
     last = raw_input("Enter last name: ")
@@ -118,7 +131,7 @@ def join_project(reqdir):
     Copy public credentials into the current project.
     '''
     qwerkid = read_qwerkid()
-    del qwerkid['private_key']
+    del qwerkid['private_key'] #sanitize out the private key
     uname = qwerkid['first_name'] + "_" + qwerkid['last_name']
     os.makedirs(os.path.join(reqdir, ".users"))
     pubfile = os.path.join(reqdir, ".users", uname)
@@ -129,11 +142,18 @@ def join_project(reqdir):
         yaml.dump(qwerkid, f)
 
 def sig_file_name(reqdir, req_name, sig_type):
+    '''
+    Get the signature filename for the given requirement name and signature type.
+    Also creates the necessary .sig directory in the reqdir.
+    '''
     d = os.path.join(reqdir, ".sig")
     os.makedirs(d)
     return os.path.join(d, "{0}_{1}".format(req_name, sig_type))
 
 def check_sig(reqdir, sigfile, reqfile):
+    '''
+    Check a particular signature file against a particular requirement file.
+    '''
     sigy = None
     with open(sigfile, 'r') as f:
         sigy = yaml.load(f)
