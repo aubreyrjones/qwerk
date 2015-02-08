@@ -224,5 +224,5 @@ class Authority(object):
         sig['user'] = "{0}_{1}".format(self.first_name, self.last_name)
         with open(sigfile, 'w') as f:
             yaml.dump(sig, f)
-        if sign_type == 'reviewed':
+        if sign_type == 'reviewed' and requirement.is_backlog():
             move_req_from_backlog(state, req_name)

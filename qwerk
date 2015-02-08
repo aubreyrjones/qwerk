@@ -103,14 +103,44 @@ def do_checksig(args):
         args.requirements = state.requirements.keys()
     for r in args.requirements:
         check_okay = tracking.check_sigs(state, r)
-        print "{0}: {1}".format(r, "Okay" if check_okay else "Failed")
-        if not check_okay:
-            exit()
+        print "{0}: {1}".format(r, "Okay" if check_okay else "FAILED!")
+    
+def do_init(args):
+    '''
+    Initialize a new Qwerkfile.
+    '''
+    to_write = {}
+    to_write['project_name'] = args.project_name
+    req_dir = to_write['req_dir'] = os.path.relpath(args.req_dir)
+    out_dir = to_write['output_dir'] = os.path.relpath(args.doc_dir)
+    with open('Qwerkfile', 'w') as f:
+        yaml.dump(to_write, f)
+    
+    if not os.path.exists(req_dir):
+        try:
+            os.makedirs(os.path.join(req_dir, "Core"))
+            os.makedirs(os.path.join(req_dir, "backlog", "Core"))
+        except:
+            print("Directories exist.")
+            pass
+    
+    if not os.path.exists(to_write['output_dir']):
+        try:
+            os.makedirs(to_write['output_dir'])
+        except:
+            print("Directories exist.")
+            pass
     
 
 # argument parsing        
 args_parser = argparse.ArgumentParser(description = "Manage requirements.")
 subparsers = args_parser.add_subparsers(help = "subcommand help")
+
+init_parser = subparsers.add_parser("init", help="initialize new project by defining Qwerkfile in current directory.")
+init_parser.add_argument("project_name", type=str, help="the new project's name")
+init_parser.add_argument("req_dir", type=str, help="requirements directory (which may not exist, but will be created)")
+init_parser.add_argument("doc_dir", type=str, help="documents output directory (which may not exist, but will be created)")
+init_parser.set_defaults(func=do_init)
 
 id_parser = subparsers.add_parser("id", help="manage identity")
 id_parser.add_argument("command", choices=['new', 'join'], help="What command to run. 'new' for a new identity, \
@@ -122,7 +152,7 @@ doc_parser.add_argument("-t", "--type", type=str, default='all', choices=['all',
 doc_parser.set_defaults(func=do_gen)
 
 sign_parser = subparsers.add_parser("sign", help="sign off on requirements")
-sign_parser.add_argument("type", type=str, choices=['complete', 'reviewed'], help="Type of signature to apply.")
+sign_parser.add_argument("type", type=str, choices=['completed', 'reviewed'], help="Type of signature to apply.")
 sign_parser.add_argument("requirement", type=str, help="Name of the requirement to sign.")
 sign_parser.set_defaults(func=do_sign)
 
