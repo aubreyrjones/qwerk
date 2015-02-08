@@ -7,11 +7,12 @@ import copy
 import glob
 
 class Requirement(object):
-    def __init__(self, name, text, category, deps):
+    def __init__(self, name, text, category, deps, filename):
         self.name = name
         self.text = text
         self.category = category
         self.deps = deps
+        self.file = filename
         
         self.incoming = []
     
@@ -32,11 +33,13 @@ class ProjectState(object):
     Represents the state of a project, including all discovered requirements
     and the search path for finding undiscovered requirements.
     '''
-    def __init__(self, name):
+    def __init__(self, name, backlog=False):
         self.name = name
         self.requirements = {}
         self.categories = {}
-        self.path = []
+        self.path = {}
+        self.backlog = backlog
+        self.root = ""
     
     def add_to_path(self, dirname):
         '''
@@ -59,13 +62,19 @@ class ProjectState(object):
         name = os.path.basename(filename)[:-2]
         category = os.path.split(os.path.dirname(filename))[1]
         
+        if self.backlog:
+            category = category + '_backlog'
+        
+        if category not in self.path.keys():
+            self.path[category] = os.path.dirname(filename)
+        
         text = ''
         deps = []
         if 'text' in yml:
             text = yml['text'].strip().replace("-\n", "").replace("\n", " ")
         if 'deps' in yml:
             deps = yml['deps']
-        req = Requirement(name, text, category, deps)
+        req = Requirement(name, text, category, deps, filename)
         self.requirements[name] = req
         if category in self.categories:
             self.categories[category].append(req.name)
@@ -79,15 +88,25 @@ class ProjectState(object):
         for f in glob.glob(os.path.join(dirname, "*.y")):
             self.load_requirement(f)
     
-    def load_all_from_root(self, root_dirname):
+    def load_all_from_root(self, root_dirname, graphify=True):
         '''
         Load all of the subdirectories under the given directory.
         '''
+        self.root = root_dirname
         for entry in os.listdir(root_dirname):
             f = os.path.join(root_dirname, entry)
             if os.path.isdir(f):
-                self.load_directory(f)
-        self.graphify()
+                dname = os.path.split(f)[1]
+                if dname.startswith('.'):
+                    continue
+                elif dname == 'backlog':
+                    backlog_state = ProjectState(self.name, True)
+                    backlog_state.load_all_from_root(f, False)
+                    self.merge_from(backlog_state)
+                else:
+                    self.load_directory(f)
+        if graphify:
+            self.graphify()
 
     def graph_out_req(self, key):
         '''
@@ -168,3 +187,26 @@ class ProjectState(object):
         Dump the currently loaded requirements.
         '''
         pprint.pprint(sorted(self.requirements.values(), reverse=True, key=lambda r: r.number_of_incoming()))
+        
+    def merge_from(self, other):
+        '''
+        Merge all requirements entries from the other into this one.
+        '''
+        for p in other.path.keys():
+            if p not in self.path.keys():
+                self.path[p] = other.path[p] 
+        
+        for r in other.requirements.keys():
+            if r in self.requirements.keys():
+                print("Duplicate requirement: " + r)
+                exit()
+            self.requirements[r] = other.requirements[r]
+            
+        for c in other.categories.keys():
+            if c not in self.categories.keys():
+                self.categories[c] = []
+            for cr in other.categories[c]:
+                if cr not in self.categories[c]:
+                    self.categories[c].append(cr)
+        pass
+    
