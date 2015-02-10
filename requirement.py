@@ -38,6 +38,7 @@ class Requirement(object):
         self.file = filename
         
         self.incoming = []
+        self.transient = 0
     
     def number_of_incoming(self):
         '''
@@ -64,6 +65,15 @@ class Requirement(object):
         if self.is_backlog():
             return self.category[:self.category.find("_backlog")]
         return self.category
+        
+    def increment_transient(self, state):
+        '''
+        Increment our own transient count, and recursively
+        increment our dependencies.
+        '''
+        self.transient += 1
+        for d in self.deps:
+            state.requirements[d].increment_transient(state)
 
 class ProjectState(object):
     '''
@@ -161,6 +171,7 @@ class ProjectState(object):
                 print("Requirement {0} depends on `{1}`, which is not defined in this project.".format(key, d))
                 exit()
             self.requirements[d].incoming.append(key)
+        req.increment_transient(self)
                 
     def graphify(self):
         '''
@@ -193,7 +204,7 @@ class ProjectState(object):
         '''
         Used to sort requirements according to number of incoming deps.
         '''
-        return self.requirements[req_key].number_of_incoming()
+        return self.requirements[req_key].transient
     
     def dotify_category(self, category, outlines):
         outlines.append("subgraph cluster_{0} {{".format(category))
