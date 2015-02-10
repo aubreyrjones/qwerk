@@ -1,1 +1,1 @@
-python.exe qwerk %*
+python.exe %~dp0qwerk %*
