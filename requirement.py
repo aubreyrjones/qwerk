@@ -202,9 +202,28 @@ class ProjectState(object):
     
     def req_sort_key(self, req_key):
         '''
-        Used to sort requirements according to number of incoming deps.
+        Used to sort requirements according to transient number.
         '''
         return self.requirements[req_key].transient
+    
+    def category_transient_key(self, category):
+        '''
+        Get the sum of the transient values for all reqs in the category.
+        '''
+        return sum(map(lambda r: self.requirements[r].transient, self.categories[category]))
+
+    
+    def sort_requirement_keys(self, req_keys, high_to_low=True):
+        '''
+        Sort a list of requirement keys by their transient number.
+        '''
+        return sorted(req_keys, key=lambda k: self.req_sort_key(k), reverse=high_to_low)
+    
+    def sort_categories(self, cat_keys, high_to_low=True):
+        '''
+        Sort categories according to sum transient number
+        '''
+        return sorted(cat_keys, key=lambda c: self.category_transient_key(c), reverse=high_to_low)
     
     def dotify_category(self, category, outlines):
         outlines.append("subgraph cluster_{0} {{".format(category))
@@ -231,7 +250,7 @@ class ProjectState(object):
         for cat in self.categories.keys():
             self.dotify_category(cat, outlines)
     
-        remaining_keys = sorted(self.requirements.keys(), key=lambda k: self.req_sort_key(k), reverse=True)
+        remaining_keys = self.sort_requirement_keys(self.requirements.keys())
         
         while remaining_keys:
             self.dotify(remaining_keys[0], outlines, remaining_keys)

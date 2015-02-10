@@ -11,15 +11,9 @@ def format_requirement(req):
     #    dep_text = "\n\n    [{0}]".format(", ".join(req.deps))
     return requirement_template.format(req.name, req.text)
 
-def category_transient_key(state, category):
-    '''
-    Get the sum of the transient values for all reqs in the category.
-    '''
-    return sum(map(lambda r: state.requirements[r].transient, state.categories[category]))
-
 def format_project(state):
     outlines = []
-    categories = sorted(state.categories.keys(), key=lambda c: category_transient_key(state, c), reverse=True)
+    categories = state.sort_categories(state.categories.keys())
     for c in categories:
         outlines.append(c)
         outlines.append("=" * len(c))
