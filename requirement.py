@@ -6,6 +6,22 @@ import pprint
 import copy
 import glob
 
+def new_requirement(state, category, req_name, dependencies):
+    if req_name in state.requirements.keys():
+        print("Cannot create requirement with name {0}, name already defined by: {1}".format(req_name, state.requirements[req_name].file))
+    cat_dir = os.path.join(state.root, "backlog", category)
+    if not os.path.exists(cat_dir):
+        os.makedirs(cat_dir)
+    newfile_name =  os.path.join(cat_dir, "{0}.y".format(req_name))
+    with open(newfile_name, 'w') as f:
+        if dependencies:
+            f.write("deps:")
+            f.write("\n    - ")
+            f.write("\n    - ".join(dependencies))
+            f.write("\n")
+        f.write("text: |\n")
+        f.write("    FILL ME IN\n")
+
 class Requirement(object):
     def __init__(self, name, text, category, deps, filename):
         self.name = name
@@ -89,6 +105,12 @@ class ProjectState(object):
         if 'deps' in yml:
             deps = yml['deps']
         req = Requirement(name, text, category, deps, filename)
+        if name in self.requirements.keys():
+            print("Error: Duplicate requirement names.")
+            print(req.filename)
+            print(self.requirements[name].filename)
+            print("Exiting.")
+            exit()
         self.requirements[name] = req
         if category in self.categories:
             self.categories[category].append(req.name)

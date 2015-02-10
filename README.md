@@ -76,6 +76,8 @@ Additional help can be gotten with the `--help` argument to qwerk, as well as `q
 
 * `qwerk id join` - when run from within a qwerk project directory, adds your name and public key to the project as a signer.
 
+* `qwerk new $category $req_name $dependencies` - create a new requirement with in the given category with the given name. It will be filled in with default text and the dependencies listed on the command line.
+
 * `qwerk doc` - generate project requirements documents and graphs. Takes an optional `-t` argument with the type of document to create. By default, creates all available documents.
 
 * `qwerk sign {completed|reviewed} $requirement_name` - used to sign requirements. The `completed` subcommand indicates that a requirement has been implemented and is ready for review. The `reviewed` subcommand indicates that a requirement's implementation has been reviewed; additionally, using this subcommand will automatically move requirements from the backlog to the appropriate main category directory.

@@ -130,35 +130,47 @@ def do_init(args):
         except:
             print("Directories exist.")
             pass
-    
+
+def do_new_req(args):
+    '''
+    Create a new requirement.
+    '''
+    state, qf = load_project()
+    requirement.new_requirement(state, args.category, args.req_name, args.dependencies)
 
 # argument parsing        
 args_parser = argparse.ArgumentParser(description = "Manage requirements.")
-subparsers = args_parser.add_subparsers(help = "subcommand help")
+subparsers = args_parser.add_subparsers(help = "Subcommand help.")
 
-init_parser = subparsers.add_parser("init", help="initialize new project by defining Qwerkfile in current directory.")
-init_parser.add_argument("project_name", type=str, help="the new project's name")
-init_parser.add_argument("req_dir", type=str, help="requirements directory (which may not exist, but will be created)")
-init_parser.add_argument("doc_dir", type=str, help="documents output directory (which may not exist, but will be created)")
+init_parser = subparsers.add_parser("init", help="Initialize new project by defining Qwerkfile in current directory.")
+init_parser.add_argument("project_name", type=str, help="The new project's name.")
+init_parser.add_argument("req_dir", type=str, help="Requirements directory (which may not exist, but will be created).")
+init_parser.add_argument("doc_dir", type=str, help="Socuments output directory (which may not exist, but will be created).")
 init_parser.set_defaults(func=do_init)
 
-id_parser = subparsers.add_parser("id", help="manage identity")
+id_parser = subparsers.add_parser("id", help="Manage identity.")
 id_parser.add_argument("command", choices=['new', 'join'], help="What command to run. 'new' for a new identity, \
                        'join' to add your existing id to the current project.")
 id_parser.set_defaults(func=do_identity)
 
-doc_parser = subparsers.add_parser("doc", help="generate documents")
+doc_parser = subparsers.add_parser("doc", help="Generate documents.")
 doc_parser.add_argument("-t", "--type", type=str, default='all', choices=['all', 'dot', 'md'], help="Which document type to generate.")
 doc_parser.set_defaults(func=do_gen)
 
-sign_parser = subparsers.add_parser("sign", help="sign off on requirements")
+sign_parser = subparsers.add_parser("sign", help="Sign off on requirements.")
 sign_parser.add_argument("type", type=str, choices=['completed', 'reviewed'], help="Type of signature to apply.")
 sign_parser.add_argument("requirement", type=str, help="Name of the requirement to sign.")
 sign_parser.set_defaults(func=do_sign)
 
-check_parser = subparsers.add_parser("checksig", help="check signatures")
+check_parser = subparsers.add_parser("checksig", help="Check signatures.")
 check_parser.add_argument("requirements", nargs="*", type=str, help="Which requirement to check signatures on. Leave blank to check all.")
 check_parser.set_defaults(func=do_checksig)
+
+new_parser = subparsers.add_parser("new", help="Create new requirement.")
+new_parser.add_argument("category", type=str, help="The category in which to create the new requirement.")
+new_parser.add_argument("req_name", type=str, help="The name of the new requirement.")
+new_parser.add_argument("dependencies", type=str, nargs="*", help="Zero or more requirements on which the new one depends.")
+new_parser.set_defaults(func=do_new_req)
 
 args = args_parser.parse_args()
 args.func(args)
