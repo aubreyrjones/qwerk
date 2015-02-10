@@ -7,6 +7,9 @@ import copy
 import glob
 
 def new_requirement(state, category, req_name, dependencies):
+    '''
+    Create a new requirement in the backlog.
+    '''
     if req_name in state.requirements.keys():
         print("Cannot create requirement with name {0}, name already defined by: {1}".format(req_name, state.requirements[req_name].file))
     cat_dir = os.path.join(state.root, "backlog", category)
