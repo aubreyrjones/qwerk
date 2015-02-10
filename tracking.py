@@ -79,7 +79,7 @@ def write_identity(privkey, pubkey, first, last, password):
     to_write['private_key'] = encode_privkey(privkey, password)
     to_write['public_key'] = encode_pubkey(pubkey)
     
-    qwerkid = os.path.expanduser("~/.qwerk.user")
+    qwerkid = _qwerkid_file
     if os.path.exists(qwerkid):
         print(".qwerk.user file already exists in user home directory. Exiting.")
         exit()
