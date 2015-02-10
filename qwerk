@@ -6,6 +6,7 @@ import tracking
 import argparse
 import pprint
 import os.path
+import sys
 
 def find_qwerkfile(curdir):
     '''
@@ -136,7 +137,10 @@ def do_new_req(args):
     Create a new requirement.
     '''
     state, qf = load_project()
-    requirement.new_requirement(state, args.category, args.req_name, args.dependencies)
+    req_text = None
+    if args.interactive:
+        req_text = sys.stdin.read().strip()
+    requirement.new_requirement(state, args.category, args.req_name, args.dependencies, req_text)
 
 # argument parsing        
 args_parser = argparse.ArgumentParser(description = "Manage requirements.")
@@ -170,6 +174,7 @@ new_parser = subparsers.add_parser("new", help="Create new requirement.")
 new_parser.add_argument("category", type=str, help="The category in which to create the new requirement.")
 new_parser.add_argument("req_name", type=str, help="The name of the new requirement.")
 new_parser.add_argument("dependencies", type=str, nargs="*", help="Zero or more requirements on which the new one depends.")
+new_parser.add_argument('-i', '--interactive', action='store_const', const=True, default=False, help="Accept requirement text from stdin. Newline + end of file to end.")
 new_parser.set_defaults(func=do_new_req)
 
 args = args_parser.parse_args()

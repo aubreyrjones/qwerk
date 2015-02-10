@@ -6,7 +6,7 @@ import pprint
 import copy
 import glob
 
-def new_requirement(state, category, req_name, dependencies):
+def new_requirement(state, category, req_name, dependencies, text=None):
     '''
     Create a new requirement in the backlog.
     '''
@@ -23,7 +23,11 @@ def new_requirement(state, category, req_name, dependencies):
             f.write("\n    - ".join(dependencies))
             f.write("\n")
         f.write("text: |\n")
-        f.write("    FILL ME IN\n")
+        if not text:
+            f.write("    FILL ME IN\n")
+        else:
+            f.write("    " + text.replace("\n", "\n    "))
+            f.write("\n")
 
 class Requirement(object):
     def __init__(self, name, text, category, deps, filename):
@@ -153,6 +157,9 @@ class ProjectState(object):
         '''
         req = self.requirements[key]
         for d in req.deps:
+            if d not in self.requirements.keys():
+                print("Requirement {0} depends on `{1}`, which is not defined in this project.".format(key, d))
+                exit()
             self.requirements[d].incoming.append(key)
                 
     def graphify(self):
