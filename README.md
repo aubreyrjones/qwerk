@@ -18,6 +18,22 @@ Features
 Manual
 ======
 
+Installation
+------------
+
+qwerk is written in pure python, even the crypto, so there's nothing to install but python and qwerk.
+
+0. Install Python 2.7.
+0. Ensure that the `python` executable is on your command line/console path.
+0. Clone the `qwerk` project using git.
+0. Add the `qwerk` project directory to your path.
+
+You should now be be able to type `qwerk --help` from any directory and get qwerk's help message. If not, something is not right on your path. If you're on a unix-like operating system, make sure that the `qwerk` file (no extension) has executable permission.
+
+
+Requirements
+------------
+
 qwerk represents requirements as individual YAML files stored in the target project's version control repository. Each file defines a single requirement, with a name determined by removing the `.y` suffix from the requirement file: for example, `client_executable.y` defines a requirement called `client_executable`.
 
 Each requirement file contains a YAML list (called `deps`) of each requirement on which this one depends, and a requirement description (called `text`) that describes the requirement in as much detail as process dictates. Requirement dependencies are listed only by name, not by filename.
@@ -51,6 +67,8 @@ When using qwerk requirement tracking and accountability, the life cycle of a re
 0. The lead runs the `qwerk sign reviewed` command, and the requirement file is automatically moved from the `backlog` hierarchy to the corresponding main category directory.
 0. The lead checks the resulting signature file and requirement file rename into the project's version control system.
 
+The first two steps might be combined through the usage of the `qwerk new` command, but that isn't conceptually different from what's described above.
+
 Qwerkfile
 ---------
 
@@ -76,7 +94,7 @@ Additional help can be gotten with the `--help` argument to qwerk, as well as `q
 
 * `qwerk id join` - when run from within a qwerk project directory, adds your name and public key to the project as a signer.
 
-* `qwerk new $category $req_name $dependencies` - create a new requirement with in the given category with the given name. It will be filled in with default text and the dependencies listed on the command line. Accepts an optional `-i` argument. If provided, qwerk will read the `text` of the new requirement from stdin. In this mode, End-of-File must be sent to terminate reading.
+* `qwerk new $category $req_name $dependencies` - create a new requirement in the given category with the given name. It will be filled in with default text and the dependencies listed on the command line. Accepts an optional `-i` argument. If provided, qwerk will read the `text` of the new requirement from stdin and include it instead of the default text. In this mode, End-of-File must be sent to terminate reading.
 
 * `qwerk doc` - generate project requirements documents and graphs. Takes an optional `-t` argument with the type of document to create. By default, creates all available documents.
 
