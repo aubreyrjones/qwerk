@@ -94,7 +94,9 @@ Additional help can be gotten with the `--help` argument to qwerk, as well as `q
 
 * `qwerk id join` - when run from within a qwerk project directory, adds your name and public key to the project as a signer.
 
-* `qwerk new $category $req_name $dependencies` - create a new requirement in the given category with the given name. It will be filled in with default text and the dependencies listed on the command line. Accepts an optional `-i` argument. If provided, qwerk will read the `text` of the new requirement from stdin and include it instead of the default text. In this mode, End-of-File must be sent to terminate reading.
+* `qwerk new $category $req_name $dependencies` - create a new requirement in the given category with the given name. It will be filled in with default text and the dependencies listed on the command line. Accepts an optional `-i` argument. If provided, qwerk will read the `text` of the new requirement from stdin and include it instead of the default text. In this mode, End-of-File must be sent to terminate reading. Text input will automatically be word-wrapped.
+
+* `qwerk file $requirement` - print the filename defining the given requirement. Try this on unix to open a requirement's definition in your editor: `` $EDITOR `qwerk file some_requirement` ``
 
 * `qwerk doc` - generate project requirements documents and graphs. Takes an optional `-t` argument with the type of document to create. By default, creates all available documents.
 

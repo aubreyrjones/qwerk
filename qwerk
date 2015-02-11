@@ -142,6 +142,13 @@ def do_new_req(args):
         req_text = sys.stdin.read().strip()
     requirement.new_requirement(state, args.category, args.req_name, args.dependencies, req_text)
 
+def do_file(args):
+    '''
+    Print the filename for a req to the console.
+    '''
+    state, qf = load_project()
+    print state.requirements[args.requirement].file
+    
 # argument parsing        
 args_parser = argparse.ArgumentParser(description = "Manage requirements.")
 subparsers = args_parser.add_subparsers(help = "Subcommand help.")
@@ -177,5 +184,10 @@ new_parser.add_argument("dependencies", type=str, nargs="*", help="Zero or more 
 new_parser.add_argument('-i', '--interactive', action='store_const', const=True, default=False, help="Accept requirement text from stdin. Newline + end of file to end.")
 new_parser.set_defaults(func=do_new_req)
 
+file_parser = subparsers.add_parser("file", help="Get the file defining a requirement.")
+file_parser.add_argument("requirement", type=str, help="The requirement to get the filename for.")
+file_parser.set_defaults(func=do_file)
+
 args = args_parser.parse_args()
 args.func(args)
+
