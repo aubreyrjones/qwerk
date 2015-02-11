@@ -82,6 +82,12 @@ The Qwerkfile must define the following keys:
 * req_dir - the root directory containing the requirements category directories, backlog directory, and accountability directory (if used).
 * output_dir - the directory in which synthesized documents should be written.
 
+Output
+------
+
+qwerk currently outputs two files when `qwerk doc` is called. The first is `$PROJECT_Requirements.md`, which is a single unified document listing all requirements and any signoffs that they have.
+
+The second is called `$PROJECT_Requirements_Dependency.dot`. This is a dependency graph of the whole project in GraphViz dot format. Specifically, requirements are clustered by category; and they are color-coded. Red for backlog; yellow for tasks signed "completed" but not "reviewed"; and green for tasks signed both "completed" and "reviewed".
 
 Commands
 --------
