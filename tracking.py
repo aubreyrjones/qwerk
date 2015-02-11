@@ -151,6 +151,15 @@ def sig_file_name(reqdir, req_name, sig_type):
         os.makedirs(d)
     return os.path.join(d, "{0}_{1}".format(req_name, sig_type))
 
+def check_sig_type(reqdir, req, sig_type):
+    '''
+    Check the existence/validity of a particular signature.
+    '''
+    sig_file = sig_file_name(reqdir, req.name, sig_type)
+    if not os.path.exists(sig_file):
+        return False
+    return check_sig(reqdir, sig_file, req.file)
+    
 def check_sig(reqdir, sigfile, reqfile):
     '''
     Check a particular signature file against a particular requirement file.
@@ -174,6 +183,18 @@ def check_sigs(state, req_name):
             allPassed = False
     
     return allPassed
+
+def is_completed(req, state):
+    '''
+    Check the _completed signature file.
+    '''
+    return check_sig_type(state.root, req, "completed")
+
+def is_reviewed(req, state):
+    '''
+    Check the _reviewed signature file.
+    '''
+    return check_sig_type(state.root, req, "reviewed")
 
 def move_req_from_backlog(state, req_name):
     '''

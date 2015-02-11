@@ -1,11 +1,15 @@
 digraph "qwerk Requirements Dependency" {
-node [shape=record];
+node [shape=record, style=filled];
 
 
-subgraph cluster_Core_backlog {
-label = "Core_backlog";
+subgraph "cluster_Core" {
+label = "Core";
 color=blue;
-"represent_dependency" "output_dependency" "output_requirements" "represent_requirements" "extract_dependency";
+node [style=filled, fillcolor="#8DFFD2"] represent_requirements;
+node [style=filled, fillcolor="#FF8D8D"] represent_dependency;
+node [style=filled, fillcolor="#FF8D8D"] extract_dependency;
+node [style=filled, fillcolor="#FF8D8D"] output_dependency;
+node [style=filled, fillcolor="#FF8D8D"] output_requirements;
 }
 
 

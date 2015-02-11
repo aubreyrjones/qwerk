@@ -6,6 +6,7 @@ import pprint
 import copy
 import glob
 import textwrap
+import tracking
 
 _req_text_wrapper = textwrap.TextWrapper(width = 80, replace_whitespace = True, initial_indent = '    ', subsequent_indent = '    ', break_long_words = False)
 
@@ -42,16 +43,22 @@ def new_requirement(state, category, req_name, dependencies, text=None):
             f.write("\n")
 
 class Requirement(object):
-    def __init__(self, name, text, category, deps, filename):
+    def __init__(self, name, text, category, deps, filename, backlog):
         self.name = name
         self.text = text
-        self.category = category
+        self._category = category
+        self.backlog = backlog
         self.deps = deps
         self.file = filename
         
         self.incoming = []
         self.transient = 0
     
+    def get_category(self):
+        return self._category
+    
+    category = property(get_category)
+        
     def number_of_incoming(self):
         '''
         Get the number of incoming links.
@@ -68,15 +75,13 @@ class Requirement(object):
         '''
         Is this a backlog requirement?
         '''
-        return self.category.endswith("_backlog")
+        return self.backlog
     
     def base_category(self):
         '''
         Get base category without _backlog suffix.
         '''
-        if self.is_backlog():
-            return self.category[:self.category.find("_backlog")]
-        return self.category
+        return self._category
         
     def increment_transient(self, state):
         '''
@@ -87,6 +92,19 @@ class Requirement(object):
         for d in self.deps:
             state.requirements[d].increment_transient(state)
 
+
+def node_color(state, req):
+    '''
+    Color of the node in a graphical view.
+    '''
+    if tracking.is_completed(req, state) and tracking.is_reviewed(req, state):
+        return '8DFFD2';
+    elif tracking.is_completed(req, state):
+        return 'FCFF8D';
+    elif req.backlog:
+        return 'FF8D8D'
+    return 'FFFFFF'
+            
 class ProjectState(object):
     '''
     Represents the state of a project, including all discovered requirements
@@ -121,19 +139,13 @@ class ProjectState(object):
         name = os.path.basename(filename)[:-2]
         category = os.path.split(os.path.dirname(filename))[1]
         
-        if self.backlog:
-            category = category + '_backlog'
-        
-        if category not in self.path.keys():
-            self.path[category] = os.path.dirname(filename)
-        
         text = ''
         deps = []
         if 'text' in yml:
             text = yml['text'].strip().replace("-\n", "").replace("\n", " ")
         if 'deps' in yml:
             deps = yml['deps']
-        req = Requirement(name, text, category, deps, filename)
+        req = Requirement(name, text, category, deps, filename, self.backlog)
         if name in self.requirements.keys():
             print("Error: Duplicate requirement names.")
             print(req.filename)
@@ -141,10 +153,10 @@ class ProjectState(object):
             print("Exiting.")
             exit()
         self.requirements[name] = req
-        if category in self.categories:
-            self.categories[category].append(req.name)
+        if req.category in self.categories:
+            self.categories[req.category].append(req.name)
         else:
-            self.categories[category] = [req.name]
+            self.categories[req.category] = [req.name]
         
     def load_directory(self, dirname):
         '''
@@ -193,24 +205,6 @@ class ProjectState(object):
         while req_keys:
             self.graph_out_req(req_keys.pop(0))
             
-    def dotify(self, req_name, outlines, remaining_keys):
-        '''
-        Write out the dot graph description for the node
-        and its dependencies.
-        '''
-        if req_name not in remaining_keys:
-            print "\n".join(outlines)
-            print remaining_keys
-            print req_name
-            exit()
-        remaining_keys.remove(req_name)
-        
-        req = self.requirements[req_name]
-        
-        for d in req.incoming:
-            outlines.append("{0} -> {1};".format(req.name, d))
-            if d in remaining_keys:
-                self.dotify(d, outlines, remaining_keys)
     
     def req_sort_key(self, req_key):
         '''
@@ -237,15 +231,38 @@ class ProjectState(object):
         '''
         return sorted(cat_keys, key=lambda c: self.category_transient_key(c), reverse=high_to_low)
     
+    def dotify(self, req_name, outlines, remaining_keys):
+        '''
+        Write out the dot graph description for the node
+        and its dependencies.
+        '''
+        if req_name not in remaining_keys:
+            print "\n".join(outlines)
+            print remaining_keys
+            print req_name
+            exit()
+        remaining_keys.remove(req_name)
+        
+        req = self.requirements[req_name]
+        
+        for d in req.incoming:
+            outlines.append("{0} -> {1};".format(req.name, d))
+            if d in remaining_keys:
+                self.dotify(d, outlines, remaining_keys)
+    
+    
     def dotify_category(self, category, outlines):
-        outlines.append("subgraph cluster_{0} {{".format(category))
+        outlines.append("subgraph \"cluster_{0}\" {{".format(category))
         outlines.append("label = \"{0}\";".format(category))
         outlines.append("color=blue;")
-        #outlines.append("node [style=filled];")
     
-        quoted = map(lambda x: '"{0}"'.format(x), self.categories[category])
+        #quoted = map(lambda x: '"{0}"'.format(x), self.categories[category])
+        #
+        #outlines.append(" ".join(quoted) + ";")
         
-        outlines.append(" ".join(quoted) + ";")    
+        for r in self.sort_requirement_keys(self.categories[category]):
+            req = self.requirements[r]
+            outlines.append("node [style=filled, fillcolor=\"#{1}\"] {0};".format(req.name, node_color(self, req)))
         
         outlines.append("}\n\n")
         
@@ -257,7 +274,7 @@ class ProjectState(object):
         outlines = []
         outlines.append("digraph \"{0} Requirements Dependency\" {{".format(self.name))
         #outlines.append("graph [compound=true];")
-        outlines.append("node [shape=record];\n\n")
+        outlines.append("node [shape=record, style=filled];\n\n")
         
         for cat in self.categories.keys():
             self.dotify_category(cat, outlines)

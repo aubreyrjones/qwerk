@@ -1,26 +1,21 @@
-Core_backlog
-============
-
-* __represent_dependency__
-
-    Represent dependencies within requirement descriptions with minimal effort.
-
-
-* __output_dependency__
-
-    Output full-project dependency information in a standard graph format.
-
-
-* __output_requirements__
-
-    Output requirements as a unified, full-project document.
-
+Core
+====
 
 * __represent_requirements__
+represent_requirements
 
-    Represent requirements in an easily-editable, easily-readable, easily-parsable format.
+
+* __represent_dependency__
+represent_dependency
 
 
 * __extract_dependency__
+extract_dependency
 
-    Extract full-project requirements dependency information.
+
+* __output_dependency__
+output_dependency
+
+
+* __output_requirements__
+output_requirements

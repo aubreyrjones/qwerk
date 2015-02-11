@@ -1,15 +1,15 @@
+import textwrap
+
+_req_text_wrapper = textwrap.TextWrapper(width = 80, replace_whitespace = True, initial_indent = '    ', subsequent_indent = '    ', break_long_words = False)
 
 requirement_template = '''
 * __{0}__
 
-    {1}
+{1}
 '''
 
 def format_requirement(req):
-    #dep_text = ''
-    #if req.deps:
-    #    dep_text = "\n\n    [{0}]".format(", ".join(req.deps))
-    return requirement_template.format(req.name, req.text)
+    return requirement_template.format(req.name, _req_text_wrapper.fill(req.text))
 
 def format_project(state):
     outlines = []
