@@ -5,6 +5,9 @@ import os.path
 import pprint
 import copy
 import glob
+import textwrap
+
+_req_text_wrapper = textwrap.TextWrapper(width = 80, replace_whitespace = True, initial_indent = '    ', subsequent_indent = '    ', break_long_words = False)
 
 def new_requirement(state, category, req_name, dependencies, text=None):
     '''
@@ -12,6 +15,15 @@ def new_requirement(state, category, req_name, dependencies, text=None):
     '''
     if req_name in state.requirements.keys():
         print("Cannot create requirement with name {0}, name already defined by: {1}".format(req_name, state.requirements[req_name].file))
+        print("Exiting.")
+        exit()
+    for d in dependencies:
+        if d not in state.requirements.keys():
+            print("Undefined dependency: {0}\nExiting.".format(d))
+            exit()
+    if not category[0].isupper():
+        print("Category name should begin with an uppercase letter. Exiting.")
+        exit()
     cat_dir = os.path.join(state.root, "backlog", category)
     if not os.path.exists(cat_dir):
         os.makedirs(cat_dir)
@@ -26,7 +38,7 @@ def new_requirement(state, category, req_name, dependencies, text=None):
         if not text:
             f.write("    FILL ME IN\n")
         else:
-            f.write("    " + text.replace("\n", "\n    "))
+            f.write(_req_text_wrapper.fill(text))
             f.write("\n")
 
 class Requirement(object):
