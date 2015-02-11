@@ -158,7 +158,7 @@ def check_sig_type(reqdir, req, sig_type):
     sig_file = sig_file_name(reqdir, req.name, sig_type)
     if not os.path.exists(sig_file):
         return False
-    return check_sig(reqdir, sig_file, req.file)
+    return check_sig(reqdir, sig_file, req.file)[0]
     
 def check_sig(reqdir, sigfile, reqfile):
     '''
@@ -169,7 +169,7 @@ def check_sig(reqdir, sigfile, reqfile):
         sigy = yaml.load(f)
     username = sigy['user']
     pubkey = get_pubkey(reqdir, username)
-    return verify_file_signature(reqfile, sigy['signature'], pubkey)
+    return (verify_file_signature(reqfile, sigy['signature'], pubkey), username)
     
 def check_sigs(state, req_name):
     '''
@@ -178,12 +178,28 @@ def check_sigs(state, req_name):
     signatures = glob.glob(os.path.join(state.root, ".sig", req_name + "_*"))
     allPassed = True
     for s in signatures:
-        if not check_sig(state.root, s, state.requirements[req_name].file):
+        if not check_sig(state.root, s, state.requirements[req_name].file)[0]:
             print("Signature failed: " + s)
             allPassed = False
     
     return allPassed
-
+    
+def get_signoffs(state, req_name):
+    '''
+    Get all signoffs as first,last,type
+    '''
+    signatures = glob.glob(os.path.join(state.root, ".sig", req_name + "_*"))
+    signoffs = []
+    for s in signatures:
+        sig_type = s[s.rfind("_")+1:]
+        sig_check = check_sig(state.root, s, state.requirements[req_name].file)
+        if not sig_check[0]:
+            print("Invalid signature {0}, continuing.".format(s))
+            continue
+        namesplit = sig_check[1].split("_")
+        signoffs.append((namesplit[0], namesplit[1], sig_type))
+    return signoffs
+    
 def is_completed(req, state):
     '''
     Check the _completed signature file.
