@@ -92,7 +92,7 @@ def do_sign(args):
     '''
     state, qf = load_project()
     a = tracking.Authority()
-    a.sign_requirement(state, args.requirement, args.type)
+    a.sign_requirement(state, args.requirement, args.type, args.force)
     pass
 
 def do_checksig(args):
@@ -171,6 +171,7 @@ doc_parser.set_defaults(func=do_gen)
 sign_parser = subparsers.add_parser("sign", help="Sign off on requirements.")
 sign_parser.add_argument("type", type=str, choices=['completed', 'reviewed'], help="Type of signature to apply.")
 sign_parser.add_argument("requirement", type=str, help="Name of the requirement to sign.")
+sign_parser.add_argument('-f', '--force', action='store_const', const=True, default=False, help="Sign requirement even if equivalent signature already exists.")
 sign_parser.set_defaults(func=do_sign)
 
 check_parser = subparsers.add_parser("checksig", help="Check signatures.")

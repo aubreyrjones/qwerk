@@ -248,7 +248,7 @@ class Authority(object):
         with open(filename, 'r') as f:
             return b64encode(rsa.sign(f, self.private_key, 'SHA-1'))
     
-    def sign_requirement(self, state, req_name, sign_type):
+    def sign_requirement(self, state, req_name, sign_type, force=False):
         '''
         Sign a requirement with the given sign_type, and save the signature
         in the .sigs directory.
@@ -256,6 +256,10 @@ class Authority(object):
         requirement = state.requirements[req_name]
         filesig = self.sign_file(requirement.file)
         sigfile = sig_file_name(state.root, req_name, sign_type)
+        if not force and os.path.exists(sigfile):
+            print("A signature of type '{0}' already exists for {1}.".format(sign_type, req_name))
+            print("Use `-f` or `--force` to overwrite the existing signature and take responsibility.")
+            exit()
         sig = {}
         sig['signature'] = filesig
         sig['user'] = "{0}_{1}".format(self.first_name, self.last_name)
