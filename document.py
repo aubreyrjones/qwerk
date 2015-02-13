@@ -3,8 +3,7 @@ import tracking
 
 _req_text_wrapper = textwrap.TextWrapper(width = 80, replace_whitespace = True, initial_indent = '    ', subsequent_indent = '    ', break_long_words = False)
 
-signoff_template = '''
-    * {0} {1} [{2}]'''
+signoff_template = "    * {0} {1} [{2}]\n"
 
 requirement_template = '''
 * __{0}__
